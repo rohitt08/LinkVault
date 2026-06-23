@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Copy, Check, ExternalLink, Calendar, MousePointerClick, Trash2, Lock, Unlock, Clock, Eye, EyeOff, PlaySquare, Camera, Users, Link as LinkIcon, Download } from 'lucide-react';
+import { ArrowLeft, Copy, Check, ExternalLink, Calendar, MousePointerClick, Trash2, Lock, Unlock, Clock, Eye, EyeOff } from 'lucide-react';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { getHistory, deleteLink } from '../services/urlService';
@@ -13,6 +13,13 @@ export function History() {
   const [copiedAlias, setCopiedAlias] = useState('');
   const [visiblePasswords, setVisiblePasswords] = useState<Record<number, boolean>>({});
   const [currentPage, setCurrentPage] = useState(1);
+
+  const togglePassword = (id: number) => {
+    setVisiblePasswords(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
 
   useEffect(() => {
     getHistory()
