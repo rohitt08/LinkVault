@@ -32,6 +32,12 @@ public class UrlController {
     private final RateLimitingService rateLimitingService;
     private final UserRepository userRepository;
 
+    @org.springframework.beans.factory.annotation.Value("${linkvault.app.frontendUrl}")
+    private String frontendUrl;
+
+    @org.springframework.beans.factory.annotation.Value("${linkvault.app.backendUrl}")
+    private String backendUrl;
+
     @Autowired
     public UrlController(UrlService urlService, RateLimitingService rateLimitingService, UserRepository userRepository) {
         this.urlService = urlService;
@@ -61,7 +67,7 @@ public class UrlController {
             ShortLink link = urlService.shortenUrl(request.getOriginalUrl(), request.getCustomAlias(), request.getPassword(), request.getExpiresAt(), user);
             
             // Generate QR Code
-            String qrCode = QrCodeUtil.generateQrCodeBase64("http://localhost:8080/" + link.getAlias());
+            String qrCode = QrCodeUtil.generateQrCodeBase64(backendUrl + "/" + link.getAlias());
             
             ShortenResponse response = new ShortenResponse(link, qrCode);
             return ResponseEntity.ok(response);
@@ -79,13 +85,13 @@ public class UrlController {
             
             if (link.getExpiresAt() != null && LocalDateTime.now().isAfter(link.getExpiresAt())) {
                 HttpHeaders headers = new HttpHeaders();
-                headers.setLocation(URI.create("http://localhost:5174/expired"));
+                headers.setLocation(URI.create(frontendUrl + "/expired"));
                 return new ResponseEntity<>(headers, HttpStatus.FOUND);
             }
             
             if (link.getPassword() != null && !link.getPassword().trim().isEmpty()) {
                 HttpHeaders headers = new HttpHeaders();
-                headers.setLocation(URI.create("http://localhost:5174/unlock/" + alias));
+                headers.setLocation(URI.create(frontendUrl + "/unlock/" + alias));
                 return new ResponseEntity<>(headers, HttpStatus.FOUND);
             }
             
