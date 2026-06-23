@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.WebUtils;
 
@@ -52,7 +51,7 @@ public class JwtUtils {
                 .maxAge(jwtExpirationMs / 1000)
                 .httpOnly(true)
                 .secure(jwtCookieSecure)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
     }
 
@@ -62,7 +61,7 @@ public class JwtUtils {
                 .maxAge(0)
                 .httpOnly(true)
                 .secure(jwtCookieSecure)
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
     }
 
