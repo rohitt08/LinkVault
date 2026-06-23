@@ -8,6 +8,7 @@ export const shortenUrl = async (data: ShortenUrlRequest): Promise<ShortenUrlRes
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: 'include',
     body: JSON.stringify({
       originalUrl: data.url,
       customAlias: data.customAlias,
@@ -33,3 +34,33 @@ export const shortenUrl = async (data: ShortenUrlRequest): Promise<ShortenUrlRes
     qrCode: result.qrCode,
   };
 };
+
+export const getHistory = async () => {
+  const response = await fetch(`${API_URL}/links/history`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Error ${response.status}: ${errorText || 'Failed to fetch history'}`);
+  }
+
+  return await response.json();
+};
+
+export const deleteLink = async (id: number) => {
+  const response = await fetch(`${API_URL}/links/${id}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Error ${response.status}: ${errorText || 'Failed to delete link'}`);
+  }
+
+  return await response.json();
+};
+
+

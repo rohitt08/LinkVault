@@ -4,6 +4,7 @@ export const login = async (email: string, password: string) => {
   const response = await fetch(`${API_URL}/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({ email, password }),
   });
   if (!response.ok) {
@@ -26,6 +27,7 @@ export const register = async (fullName: string, email: string, password: string
   const response = await fetch(`${API_URL}/signup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({ fullName, email, password }),
   });
   if (!response.ok) {
@@ -42,7 +44,15 @@ export const register = async (fullName: string, email: string, password: string
   return await response.json();
 };
 
-export const logout = () => {
+export const logout = async () => {
+  try {
+    await fetch(`${API_URL}/logout`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+  }
   localStorage.removeItem('user');
 };
 
