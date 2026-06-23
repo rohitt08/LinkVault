@@ -113,7 +113,8 @@ export function History() {
                 </thead>
                 <tbody className="divide-y divide-gray-100 text-sm bg-white">
                   {currentData.map((link) => {
-                    const shortUrl = `http://localhost:8080/${link.alias}`;
+                    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+                    const shortUrl = `${API_BASE}/${link.alias}`;
                     const isPasswordVisible = visiblePasswords[link.id] || false;
                     
                     return (

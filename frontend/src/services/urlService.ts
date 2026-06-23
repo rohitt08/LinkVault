@@ -1,6 +1,7 @@
 import type { ShortenUrlRequest, ShortenUrlResponse } from '../types/url';
 
-const API_URL = 'http://localhost:8080/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const API_URL = `${API_BASE}/api`;
 
 export const shortenUrl = async (data: ShortenUrlRequest): Promise<ShortenUrlResponse> => {
   const response = await fetch(`${API_URL}/links/shorten`, {
@@ -30,7 +31,7 @@ export const shortenUrl = async (data: ShortenUrlRequest): Promise<ShortenUrlRes
   const result = await response.json();
   return {
     originalUrl: result.link.originalUrl,
-    shortUrl: `http://localhost:8080/${result.link.alias}`,
+    shortUrl: `${API_BASE}/${result.link.alias}`,
     qrCode: result.qrCode,
   };
 };

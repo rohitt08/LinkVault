@@ -84,6 +84,7 @@ public class WebSecurityConfig {
                     .requestMatchers("/api/links/*/unlock").permitAll()
                     .requestMatchers("/h2-console/**").permitAll()
                     .requestMatchers("/{alias}").permitAll()
+                    .requestMatchers("/").permitAll()
                     .anyRequest().authenticated()
             );
 
