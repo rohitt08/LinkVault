@@ -20,6 +20,7 @@ public class ShortLink {
     private int clicks = 0;
     
     // Links to the User who created it (can be null for anonymous links)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
