@@ -4,13 +4,20 @@ import com.linkvault.backend.dto.ShortenRequest;
 import com.linkvault.backend.dto.ShortenResponse;
 import com.linkvault.backend.dto.UnlockRequest;
 import com.linkvault.backend.model.ShortLink;
+import com.linkvault.backend.model.User;
+import com.linkvault.backend.repository.UserRepository;
+import com.linkvault.backend.security.services.UserDetailsImpl;
+import com.linkvault.backend.service.RateLimitingService;
 import com.linkvault.backend.service.UrlService;
 import com.linkvault.backend.util.QrCodeUtil;
+import io.github.bucket4j.Bucket;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -19,21 +26,39 @@ import java.util.Optional;
 import java.util.Map;
 
 @RestController
-@CrossOrigin(origins = "*") // Allow React frontend to connect
 public class UrlController {
 
     private final UrlService urlService;
+    private final RateLimitingService rateLimitingService;
+    private final UserRepository userRepository;
 
     @Autowired
-    public UrlController(UrlService urlService) {
+    public UrlController(UrlService urlService, RateLimitingService rateLimitingService, UserRepository userRepository) {
         this.urlService = urlService;
+        this.rateLimitingService = rateLimitingService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/api/links/shorten")
     public ResponseEntity<?> shortenUrl(@Valid @RequestBody ShortenRequest request) {
         try {
-            // Passing null for User right now until Security is implemented
-            ShortLink link = urlService.shortenUrl(request.getOriginalUrl(), request.getCustomAlias(), request.getPassword(), request.getExpiresAt(), null);
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You must be logged in to shorten a URL.");
+            }
+
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            Long userId = userDetails.getId();
+
+            Bucket bucket = rateLimitingService.resolveLinkBucket(userId);
+            if (!bucket.tryConsume(1)) {
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                        .body("Too Many Request TRY AFTER SOMETIME");
+            }
+
+            User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+            ShortLink link = urlService.shortenUrl(request.getOriginalUrl(), request.getCustomAlias(), request.getPassword(), request.getExpiresAt(), user);
             
             // Generate QR Code
             String qrCode = QrCodeUtil.generateQrCodeBase64("http://localhost:8080/" + link.getAlias());
@@ -91,6 +116,38 @@ public class UrlController {
             }
         } else {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/api/links/history")
+    public ResponseEntity<?> getUserHistory() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You must be logged in to view history.");
+        }
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        Long userId = userDetails.getId();
+
+        java.util.List<ShortLink> links = urlService.getLinksByUserId(userId);
+        return ResponseEntity.ok(links);
+    }
+
+    @DeleteMapping("/api/links/{id}")
+    public ResponseEntity<?> deleteLink(@PathVariable Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You must be logged in to delete a link.");
+        }
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        Long userId = userDetails.getId();
+
+        boolean deleted = urlService.deleteLink(id, userId);
+        if (deleted) {
+            return ResponseEntity.ok(Map.of("message", "Link deleted successfully"));
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not have permission to delete this link or it does not exist.");
         }
     }
 }
