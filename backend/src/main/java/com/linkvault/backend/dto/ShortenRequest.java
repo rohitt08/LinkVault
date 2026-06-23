@@ -7,10 +7,13 @@ public class ShortenRequest {
     
     @NotBlank(message = "URL cannot be empty")
     @URL(message = "Must be a valid URL")
+    @jakarta.validation.constraints.Size(max = 2048)
     private String originalUrl;
     
+    @jakarta.validation.constraints.Size(min = 3, max = 50, message = "Alias must be between 3 and 50 characters")
     private String customAlias;
     
+    @jakarta.validation.constraints.Size(max = 100, message = "Password must be at most 100 characters")
     private String password;
     
     private java.time.LocalDateTime expiresAt;
