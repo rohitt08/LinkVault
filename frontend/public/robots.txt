@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /history
+Disallow: /api/
+
+Sitemap: https://linkvault.com/sitemap.xml
