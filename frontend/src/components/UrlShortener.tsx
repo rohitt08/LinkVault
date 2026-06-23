@@ -11,7 +11,6 @@ export function UrlShortener() {
   const [alias, setAlias] = useState('');
   const [password, setPassword] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
   const { shorten, isLoading, error, result } = useShortenUrl();
@@ -23,7 +22,7 @@ export function UrlShortener() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-6 mt-4 relative z-10 px-4">
+    <div className="w-full max-w-6xl mx-auto space-y-6 relative z-10 px-4">
       
       <div className="text-center md:text-left mb-2 pl-2">
         <h2 className="text-2xl font-extrabold tracking-tight text-[#111] mb-2">Shorten Your Links</h2>
@@ -63,21 +62,10 @@ export function UrlShortener() {
             </Button>
           </div>
 
-          {/* Advanced Options Toggle */}
-          <div className="flex items-center justify-end mt-1">
-            <button 
-              type="button" 
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className="text-sm font-bold text-primary hover:text-indigo-800 flex items-center gap-1.5 transition-colors bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-full"
-            >
-              <Settings2 className="w-4 h-4" />
-              {showAdvanced ? 'Hide Advanced Options' : 'Advanced Options'}
-            </button>
-          </div>
-
-          {/* Advanced Options Panel */}
-          {showAdvanced && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 animate-fade-in-up">
+          {/* Additional Options */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+            <div className="space-y-2">
+              <label htmlFor="alias" className="text-sm font-bold text-gray-700 ml-1">Custom Link (Optional)</label>
               <div className="relative">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
                   <Settings2 className="h-4 w-4" />
@@ -85,12 +73,16 @@ export function UrlShortener() {
                 <Input
                   id="alias"
                   type="text"
-                  placeholder="Custom Link (optional)"
+                  placeholder="e.g. my-campaign"
                   value={alias}
                   onChange={(e) => setAlias(e.target.value)}
                   className="w-full h-12 pl-11 bg-white border border-black/5 focus-visible:ring-2 focus-visible:ring-primary/30 rounded-xl transition-shadow"
                 />
               </div>
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-bold text-gray-700 ml-1">Password (Optional)</label>
               <div className="relative">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
                   <Lock className="h-4 w-4" />
@@ -98,7 +90,7 @@ export function UrlShortener() {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Password (optional)"
+                  placeholder="Set a password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full h-12 pl-11 pr-11 bg-white border border-black/5 focus-visible:ring-2 focus-visible:ring-primary/30 rounded-xl transition-shadow"
@@ -111,6 +103,10 @@ export function UrlShortener() {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="expiresAt" className="text-sm font-bold text-gray-700 ml-1">Expiration (Optional)</label>
               <div className="relative">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground z-10">
                   <Clock className="h-4 w-4" />
@@ -126,12 +122,12 @@ export function UrlShortener() {
                 />
                 {!expiresAt && (
                   <div className="absolute left-11 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none bg-white pr-4 text-sm whitespace-nowrap">
-                    Expiration date (optional)
+                    Never expires
                   </div>
                 )}
               </div>
             </div>
-          )}
+          </div>
         </form>
         {error && <p className="text-sm text-destructive font-medium mt-3 ml-2">{error}</p>}
       </div>
