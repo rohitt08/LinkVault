@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "short_links")
+@Table(name = "short_links", indexes = {
+    @Index(name = "idx_shortlink_user", columnList = "user_id")
+})
 public class ShortLink {
     
     @Id
