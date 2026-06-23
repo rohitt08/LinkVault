@@ -61,6 +61,23 @@ public class UrlService {
         return shortLinkRepository.findByAlias(alias);
     }
 
+    public java.util.List<ShortLink> getLinksByUserId(Long userId) {
+        return shortLinkRepository.findByUserId(userId);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public boolean deleteLink(Long id, Long userId) {
+        Optional<ShortLink> linkOpt = shortLinkRepository.findById(id);
+        if (linkOpt.isPresent()) {
+            ShortLink link = linkOpt.get();
+            if (link.getUser() != null && link.getUser().getId().equals(userId)) {
+                shortLinkRepository.delete(link);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void incrementClicks(ShortLink link) {
         link.setClicks(link.getClicks() + 1);
         shortLinkRepository.save(link);
