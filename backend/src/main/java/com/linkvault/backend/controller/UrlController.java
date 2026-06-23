@@ -66,8 +66,8 @@ public class UrlController {
 
             ShortLink link = urlService.shortenUrl(request.getOriginalUrl(), request.getCustomAlias(), request.getPassword(), request.getExpiresAt(), user);
             
-            // Generate QR Code
-            String qrCode = QrCodeUtil.generateQrCodeBase64(backendUrl + "/" + link.getAlias());
+            String currentContext = org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+            String qrCode = QrCodeUtil.generateQrCodeBase64(currentContext + "/" + link.getAlias());
             
             ShortenResponse response = new ShortenResponse(link, qrCode);
             return ResponseEntity.ok(response);

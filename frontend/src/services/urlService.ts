@@ -12,8 +12,8 @@ export const shortenUrl = async (data: ShortenUrlRequest): Promise<ShortenUrlRes
     credentials: 'include',
     body: JSON.stringify({
       originalUrl: data.url,
-      customAlias: data.customAlias,
-      password: data.password,
+      customAlias: data.customAlias || undefined,
+      password: data.password || undefined,
       expiresAt: data.expiresAt ? new Date(data.expiresAt).toISOString().substring(0, 19) : undefined,
     }),
   });
