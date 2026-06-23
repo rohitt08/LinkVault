@@ -14,7 +14,7 @@ export const shortenUrl = async (data: ShortenUrlRequest): Promise<ShortenUrlRes
       originalUrl: data.url,
       customAlias: data.customAlias,
       password: data.password,
-      expiresAt: data.expiresAt ? new Date(data.expiresAt).toISOString() : undefined,
+      expiresAt: data.expiresAt ? new Date(data.expiresAt).toISOString().substring(0, 19) : undefined,
     }),
   });
 
