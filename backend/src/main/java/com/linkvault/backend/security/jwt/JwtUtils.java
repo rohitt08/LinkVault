@@ -3,11 +3,15 @@ package com.linkvault.backend.security.jwt;
 import com.linkvault.backend.security.services.UserDetailsImpl;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.WebUtils;
 
 import java.security.Key;
 import java.util.Date;
@@ -22,15 +26,49 @@ public class JwtUtils {
     @Value("${linkvault.app.jwtExpirationMs:86400000}")
     private int jwtExpirationMs;
 
+    @Value("${linkvault.app.jwtCookieName:linkvault_jwt}")
+    private String jwtCookie;
+
+    @Value("${linkvault.app.jwtCookieSecure:false}")
+    private boolean jwtCookieSecure;
+
     private Key key() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
-    public String generateJwtToken(Authentication authentication) {
-        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+    public String getJwtFromCookies(HttpServletRequest request) {
+        Cookie cookie = WebUtils.getCookie(request, jwtCookie);
+        if (cookie != null) {
+            return cookie.getValue();
+        } else {
+            return null;
+        }
+    }
 
+    public ResponseCookie generateJwtCookie(UserDetailsImpl userPrincipal) {
+        String jwt = generateTokenFromUsername(userPrincipal.getUsername());
+        return ResponseCookie.from(jwtCookie, jwt)
+                .path("/api")
+                .maxAge(jwtExpirationMs / 1000)
+                .httpOnly(true)
+                .secure(jwtCookieSecure)
+                .sameSite("Lax")
+                .build();
+    }
+
+    public ResponseCookie getCleanJwtCookie() {
+        return ResponseCookie.from(jwtCookie, "")
+                .path("/api")
+                .maxAge(0)
+                .httpOnly(true)
+                .secure(jwtCookieSecure)
+                .sameSite("Lax")
+                .build();
+    }
+
+    public String generateTokenFromUsername(String username) {
         return Jwts.builder()
-                .setSubject((userPrincipal.getUsername()))
+                .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key(), SignatureAlgorithm.HS512)
