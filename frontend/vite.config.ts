@@ -11,6 +11,14 @@ export default defineConfig({
     },
   },
   build: {
-    cssMinify: false,
+    cssMinify: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          ui: ['lucide-react', 'clsx', 'tailwind-merge']
+        }
+      }
+    }
   }
 })
