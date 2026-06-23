@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
@@ -10,25 +10,48 @@ export function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMsg(location.state.message);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccessMsg('');
     setIsLoading(true);
     try {
       await login(email, password);
-      navigate('/');
+      setSuccessMsg('Login Successful.');
+      setTimeout(() => {
+        navigate('/');
+      }, 1500);
     } catch (err: any) {
       setError(err.message || 'Invalid login credentials');
-    } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-12">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4 py-12 relative">
+      
+      {/* Success Toast */}
+      {successMsg && (
+        <div className="fixed top-6 right-6 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg font-bold animate-fade-in-up z-50 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+          {successMsg}
+        </div>
+      )}
       {/* Back to Home Link */}
       <Link to="/" className="absolute top-8 left-8 flex items-center gap-2 text-muted-foreground hover:text-[#111] transition-colors font-semibold">
         <ArrowLeft className="w-4 h-4" />

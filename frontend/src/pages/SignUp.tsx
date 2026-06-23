@@ -28,7 +28,7 @@ export function SignUp() {
     setIsLoading(true);
     try {
       await register(fullName, email, password);
-      navigate('/login');
+      navigate('/login', { state: { message: 'Successfully Registered. Please log in to continue.' } });
     } catch (err: any) {
       setError(err.message || 'Failed to create account');
     } finally {
